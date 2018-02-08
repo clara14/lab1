@@ -32,6 +32,7 @@
 #include <iostream>
 using namespace std;
 #include <stdio.h>
+#include <unistd.h>
 #include <cstdlib>
 #include <ctime>
 #include <cstring>
@@ -39,8 +40,10 @@ using namespace std;
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
 #include <GL/glx.h>
+#include "fonts.h"
 
 const int MAX_PARTICLES = 20000;
+const int MAX_BOXES = 5;
 const float GRAVITY = 0.1;
 
 //some structures
@@ -63,18 +66,20 @@ struct Particle {
 class Global {
 public:
 	int xres, yres;
-	Shape box;
+	Shape box[MAX_BOXES];
 	Particle particle[MAX_PARTICLES];
 	int n;
 	Global() {
-		xres = 800;
-		yres = 600;
+		xres = 500;
+		yres = 360;
 		//define a box shape
-		box.width = 125;
-		box.height = 20;
-		box.center.x = 120 + 5*65;
-		box.center.y = 500 - 5*60;
-		n = 0;
+		for(int i=0;i<MAX_BOXES;i++){
+		    box[i].width = 90;
+		    box[i].height = 13;
+		    box[i].center.x = 100 + (i*50);
+		    box[i].center.y = 300 - (i*40);
+		    n = 0;
+		}
 	}
 } g;
 
@@ -119,7 +124,7 @@ public:
 	void set_title() {
 		//Set the window title bar.
 		XMapWindow(dpy, win);
-		XStoreName(dpy, win, "3350 Lab1");
+		XStoreName(dpy, win, "3350 Waterfall model");
 	}
 	bool getXPending() {
 		//See if there are pending events.
@@ -137,6 +142,7 @@ public:
 } x11;
 
 //Function prototypes
+void makeParticle(int, int);
 void init_opengl(void);
 void check_mouse(XEvent *e);
 int check_keys(XEvent *e);
@@ -160,6 +166,9 @@ int main()
 			XEvent e = x11.getXNextEvent();
 			check_mouse(&e);
 			done = check_keys(&e);
+		}
+		for(int i=0;i<10;i++){
+		    makeParticle(95,350);
 		}
 		movement();
 		render();
@@ -270,17 +279,19 @@ void movement()
 	   p->s.center.y += p->velocity.y;
 	   p->velocity.y -= GRAVITY;
 	   //check for collision with shapes...
-	   Shape *s;
-	   s = &g.box;
-	   if(p->s.center.y < (s->center.y + (s->height)) &&
+	   for(int j=0;j<MAX_BOXES;j++){
+	       Shape *s;
+	       s = &g.box[j];
+	       if(p->s.center.y < (s->center.y + (s->height)) &&
 		   p->s.center.y > (s->center.y - (s->height)) && 
 		   p->s.center.x < (s->center.x + (s->width)) && 
 		   p->s.center.x > (s->center.x - s->width) ) 
-	   {
-	       p->velocity.y *= -1;
-	       p->velocity.y *= 0.5;
+	       {
+	           p->velocity.y *= -1;
+	           p->velocity.y *= 0.5;
+		   //p->velocity.x += 0.0002;
+	       }
 	   }
-
 	//check for off-screen
 	   if (p->s.center.y < 0.0) {
 	       cout << "off screen" << endl;
@@ -294,24 +305,26 @@ void movement()
 void render()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
+	float w, h;
 	//Draw shapes...
 	//
 	//draw a box
-	Shape *s;
-	glColor3ub(90,140,90);
-	s = &g.box;
-	glPushMatrix();
-	glTranslatef(s->center.x, s->center.y, s->center.z);
-	float w, h;
-	w = s->width;
-	h = s->height;
-	glBegin(GL_QUADS);
+	for(int i=0;i<MAX_BOXES;i++){
+	    Shape *s;
+	    glColor3ub(90,140,90);
+	    s = &g.box[i];
+	    glPushMatrix();
+	    glTranslatef(s->center.x, s->center.y, s->center.z);
+	    w = s->width;
+	    h = s->height;
+	    glBegin(GL_QUADS);
 		glVertex2i(-w, -h);
 		glVertex2i(-w,  h);
 		glVertex2i( w,  h);
 		glVertex2i( w, -h);
-	glEnd();
-	glPopMatrix();
+	    glEnd();
+	    glPopMatrix();
+	}
 	//
 	//Draw the particle here
 	for(int i=0; i<g.n;i++){
@@ -330,7 +343,16 @@ void render()
 	}
 	//
 	//Draw your 2D text here
-
+	Rect r;
+	glClear(GL_COLOR_BUFFER_BIT);
+	//
+	r.bot = 340;
+	r.left = 10;
+	r.center=0;
+	ggprint8b(&r, 16, 0x00ff0000, "Waterfall model");
+//	ggprint8b(&r, 16, 0x00ffff00, "n bullets: %i", g.nbullets);
+//	ggprint8b(&r, 16, 0x00ffff00, "n asteroids: %i", g.nasteroids);
+//        ggprint8b(&r, 16, 0x00ffff00, "n asteroids destroyed: %i", g.ndeadasteroids);
 
 
 
