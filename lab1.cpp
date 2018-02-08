@@ -168,7 +168,7 @@ int main()
 			done = check_keys(&e);
 		}
 		for(int i=0;i<10;i++){
-		    makeParticle(95,350);
+		    makeParticle(125,350);
 		}
 		movement();
 		render();
@@ -188,6 +188,9 @@ void init_opengl(void)
 	glOrtho(0, g.xres, 0, g.yres, -1, 1);
 	//Set the screen background color
 	glClearColor(0.1, 0.1, 0.1, 1.0);
+	//Do this to allow fonts
+	glEnable(GL_TEXTURE_2D);
+	initialize_fonts();
 }
 
 void makeParticle(int x, int y)
@@ -200,7 +203,7 @@ void makeParticle(int x, int y)
 	p->s.center.x = x;
 	p->s.center.y = y;
 	p->velocity.y = ((float)rand() / (float)RAND_MAX) * 1.0;
-	p->velocity.x = ((float)rand() / (float)RAND_MAX) * 1.0 - 0.5;
+	p->velocity.x = ((float)rand() / (float)RAND_MAX) * 1.0;
 	++g.n;
 }
 
@@ -289,7 +292,6 @@ void movement()
 	       {
 	           p->velocity.y *= -1;
 	           p->velocity.y *= 0.5;
-		   //p->velocity.x += 0.0002;
 	       }
 	   }
 	//check for off-screen
@@ -311,7 +313,7 @@ void render()
 	//draw a box
 	for(int i=0;i<MAX_BOXES;i++){
 	    Shape *s;
-	    glColor3ub(90,140,90);
+	    glColor3ub(0,0,204);
 	    s = &g.box[i];
 	    glPushMatrix();
 	    glTranslatef(s->center.x, s->center.y, s->center.z);
@@ -332,7 +334,7 @@ void render()
 	   glColor3ub(255,0,0);
 	   Vec *c = &g.particle[i].s.center;
 	   w =
-	   h = 2;
+	   h = 1.5;
 	   glBegin(GL_QUADS);
 		glVertex2i(c->x-w, c->y-h);
 		glVertex2i(c->x-w, c->y+h);
@@ -344,16 +346,28 @@ void render()
 	//
 	//Draw your 2D text here
 	Rect r;
-	glClear(GL_COLOR_BUFFER_BIT);
 	//
-	r.bot = 340;
+	r.bot = g.yres - 20;
 	r.left = 10;
 	r.center=0;
-	ggprint8b(&r, 16, 0x00ff0000, "Waterfall model");
-//	ggprint8b(&r, 16, 0x00ffff00, "n bullets: %i", g.nbullets);
-//	ggprint8b(&r, 16, 0x00ffff00, "n asteroids: %i", g.nasteroids);
-//        ggprint8b(&r, 16, 0x00ffff00, "n asteroids destroyed: %i", g.ndeadasteroids);
-
+	ggprint8b(&r, 16, 0xffffffff, "Waterfall model");
+	for(int i=0;i<MAX_BOXES;i++){
+	    Shape *s;
+	    s = &g.box[i];
+	    r.bot = s->center.y - 12;
+	    r.left = s->center.x;
+	    r.center=-20;
+	    if(i==0)
+		ggprint16(&r, 16, 0xffffffff, "%s", "Requirements");
+	    if(i==1)
+		ggprint16(&r, 16, 0xffffffff, "%s", "Design");
+	    if(i==2)
+		ggprint16(&r, 16, 0xffffffff, "%s", "Coding");
+	    if(i==3)
+		ggprint16(&r, 16, 0xffffffff, "%s", "Testing");
+	    if(i==4)
+		ggprint16(&r, 16, 0xffffffff, "%s", "Maintenence");
+	}
 
 
 }

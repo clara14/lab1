@@ -1,11 +1,23 @@
-# 3350 lab1
-# to compile your project, type make and press enter
+#
+# Makefile for asteroids game
+#
+# Enter one of the following
+#
+# make
+# make all
+# make asteroids
+# make clean
+#
+CFLAGS = -I ./include
+#LFLAGS = -lrt -lX11 -lGLU -lGL -pthread -lm
+LFLAGS = -lrt -lX11 -lGL
 
 all: lab1
 
 lab1: lab1.cpp
-	g++ lab1.cpp -Wall -olab1 -lX11 -lGL -lGLU -lm
+	g++ $(CFLAGS) lab1.cpp \
 	libggfonts.a -Wall $(LFLAGS) -o lab1
+
 clean:
 	rm -f lab1
 	rm -f *.o
